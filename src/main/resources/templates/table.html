@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="utf-8" />
+
+<title>UTPL-Control COVID</title>
+
+<!-- Bootstrap core CSS -->
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+<script
+	src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.3/js/bootstrap.min.js"></script>
+
+<!-- Custom styles for this template -->
+<link href="#" th:href="@{/css/style.css}" rel="stylesheet" />
+<link href="#" th:href="@{/css/contacts.css}" rel="stylesheet" />
+
+</head>
+
+<body>
+
+	<div class="container">
+
+		<h1>
+			Bienvenido,
+			<spam th:text="${userName}"></spam>
+			!!!
+		</h1>
+		<br />
+		<div class="panel panel-default">
+			<h3 style="text-align: center">Registros de contactos</h3>
+			<ul class="nav nav-pills">
+				<li class="nav-item"><a class="nav-link" href="#"
+					th:href="@{/contacts/contactForm?id=0}">Agregar contacto</a></li>
+			</ul>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Cédula Identidad</th>
+						<th>Nombre</th>
+						<th>Apellido</th>
+						<th>Edad</th>
+						<th>Telefono</th>
+						<th>Celular</th>
+						<th>Ciudad</th>
+						<th>Dirección</th>
+
+						<th>Acciones</th>
+
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="contact:${contacts}">
+						<td th:text="${contact.ci}"></td>
+						<td th:text="${contact.firstName}"></td>
+						<td th:text="${contact.lastName}"></td>
+						<td th:text="${contact.age}"></td>
+						<td th:text="${contact.telephone}"></td>
+						<td th:text="${contact.cellphone}"></td>
+						<td th:text="${contact.city}"></td>
+						<td th:text="${contact.address}"></td>
+						<td><a href="#"
+							th:href="@{/contacts/contactForm?id=__${contact.id}__}">
+								<button type="button" class="btn btn-default">
+									<span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+								</button>
+						</a> <a href="#"
+							th:href="@{/contacts/removeContact?id=__${contact.id}__}">
+								<button type="button" class="btn btn-danger">
+									<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+								</button>
+						</a></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+
+		<div th:if="${result == 1}" class="alert alert-success" role=alert>Registro
+			exito de la persona!!</div>
+		<div th:if="${result == 5}" class="alert alert-danger" role=alert>Error
+			al registrar nueva persona!!</div>
+		<div th:if="${result == 2}" class="alert alert-info" role=alert>Persona
+			eliminada!!</div>
+		<div th:if="${result == 6}" class="alert alert-danger" role=alert>Número
+			de Cedula Inválida!!</div>
+
+	</div>
+
+</body>
+</html>
