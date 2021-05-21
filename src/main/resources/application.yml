@@ -1,0 +1,14 @@
+spring:
+  banner:
+    location: classpath:banner/banner.txt
+  datasource:
+    url: jdbc:postgresql://localhost:5432/validador
+    username: postgres
+    password: root
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update 
+    properties:
+      hibernate.temp.use_jdbc_metadata_defaults: false
+    database-platform: org.hibernate.dialect.PostgreSQL9Dialect
