@@ -6,25 +6,39 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.utpl.sistemas.proyecto.ci.validador.ViewConstant;
 import com.utpl.sistemas.proyecto.ci.validador.model.ContactModel;
 import com.utpl.sistemas.proyecto.ci.validador.service.ContactService;
-
+import com.utpl.sistemas.proyecto.ci.validador.util.ResponseType;
 
 @Controller
 @RequestMapping("/contacts")
 public class ContactController {
 
     private final static Log LOG = LogFactory.getLog(ContactController.class);
+
+    /** The Constant RESTYP. */
+    private static final String RESTYP = "restyp";
+
+    /** The Constant MES. */
+    private static final String MES = "mes";
 
     @Autowired
     @Qualifier("contactServiceImpl")
@@ -39,22 +53,66 @@ public class ContactController {
     public String addContactTable(@Valid @ModelAttribute(name = "contactModel") ContactModel contactModel, BindingResult bindingResult) {
         LOG.info("METHOD: addContact() -- PARAMS: " + contactModel.toString());
         int result = 0;
-        if (bindingResult.hasErrors()) {
-            return ViewConstant.CONTACT_FORM;
-        } else {
-            
-            if (!validateCI(contactModel.getCi())) {
-                result = 6;
-            } else if (null != contactService.addContact(contactModel)) {
-             // Persona agregada correctamente
-                result = 1;
+        try {
+            if (bindingResult.hasErrors()) {
+                return ViewConstant.CONTACT_FORM;
             } else {
-                // No se pudo agregar a la persona
-                result = 5;
+
+                if (!validateCI(contactModel.getCi())) {
+                    result = 6;
+                } else if (null != contactService.addContact(contactModel)) {
+                    // Contacto agregado correctamente
+                    result = 1;
+                } else {
+                    // No se pudo agregar a la persona
+                    result = 5;
+                }
             }
+        } catch (DataIntegrityViolationException ex) {
+            LOG.info("error newContact", ex);
+            result = 7;
+        } catch (Exception e) {
+            LOG.error("Error al registrar nuevo contacto!!");
+            LOG.error("error addContactTable", e);
         }
 
         return "redirect:/contacts/table?result=".concat(result + "");
+    }
+
+    @ResponseBody
+    @ResponseStatus(HttpStatus.OK)
+    @RequestMapping(value = "/newContact", method = RequestMethod.POST, headers = "Accept=application/json")
+    public ResponseEntity<String> newContact(@RequestBody ContactModel contactModel) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        String result = "";
+        LOG.info("METHOD: addContact() -- PARAMS: " + contactModel.toString());
+        try {
+            if (!validateCI(contactModel.getCi())) {
+                responseHeaders.set(RESTYP, ResponseType.INFO.toString());
+                responseHeaders.set(MES, "Numero de cedula de ciudadania invalida.");
+                result = "Numero de cedula de ciudadania invalida.";
+            } else if (null != contactService.addContact(contactModel)) {
+                // Persona agregada correctamente
+                responseHeaders.set(RESTYP, ResponseType.SUCCESS.toString());
+                responseHeaders.set(MES, "Registro exitoso del contacto!!!");
+                result = "Registro exitoso del contacto!!!";
+            } else {
+                // No se pudo agregar a la persona
+                responseHeaders.set(RESTYP, ResponseType.INFO.toString());
+                responseHeaders.set(MES, "Error al registrar nuevo contacto!!");
+                result = "Error al registrar nuevo contacto!!";
+            }
+
+        } catch (DataIntegrityViolationException ex) {
+            responseHeaders.set(RESTYP, ResponseType.ERROR.toString());
+            responseHeaders.set(MES, "Contacto ya registrado!!!.");
+            LOG.info("error newContact", ex);
+        } catch (Exception e) {
+            responseHeaders.set(RESTYP, ResponseType.ERROR.toString());
+            responseHeaders.set(MES, "Error en el proceso de crear nuevo contacto.");
+            LOG.error("error newContact", e);
+        }
+        return new ResponseEntity<String>(result, responseHeaders, HttpStatus.OK);
     }
 
     @RequestMapping("/contactForm")
@@ -81,7 +139,7 @@ public class ContactController {
         contactService.removeContact(id);
         return table(2);
     }
-    
+
     private ModelAndView getMavContacts(int result, String viewConstant) {
         ModelAndView mav = new ModelAndView(viewConstant);
         mav.addObject("userName", "Administrador");
@@ -90,8 +148,7 @@ public class ContactController {
 
         return mav;
     }
-    
-    
+
     /**
      * Valida el nuemro de cedula
      * 
@@ -164,6 +221,5 @@ public class ContactController {
         }
         return result;
     }
-    
-}
 
+}

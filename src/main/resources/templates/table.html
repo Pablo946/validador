@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 
-<title>UTPL-Control COVID</title>
+<title>UTPL-Validador CI</title>
 
 <!-- Bootstrap core CSS -->
 <link rel="stylesheet"
@@ -76,14 +76,11 @@
 		</div>
 
 
-		<div th:if="${result == 1}" class="alert alert-success" role=alert>Registro
-			exito de la persona!!</div>
-		<div th:if="${result == 5}" class="alert alert-danger" role=alert>Error
-			al registrar nueva persona!!</div>
-		<div th:if="${result == 2}" class="alert alert-info" role=alert>Persona
-			eliminada!!</div>
-		<div th:if="${result == 6}" class="alert alert-danger" role=alert>Número
-			de Cedula Inválida!!</div>
+		<div th:if="${result == 1}" class="alert alert-success" role=alert>Registro exitoso del contacto!!</div>
+		<div th:if="${result == 5}" class="alert alert-danger" role=alert>Error al registrar nuevo contacto!!</div>
+		<div th:if="${result == 2}" class="alert alert-info" role=alert>Contacto eliminado !!!</div>
+		<div th:if="${result == 6}" class="alert alert-danger" role=alert>Número de Cedula Inválida!!</div>
+		<div th:if="${result == 7}" class="alert alert-danger" role=alert>Contacto ya registrado!!!.</div>
 
 	</div>
 
